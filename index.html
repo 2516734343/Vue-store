@@ -1,54 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    
-    <script src="./observer.js"></script>
     <script src="./vue.js"></script>
 </head>
-<body>
-    <!-- 被控制的区域  模板 -->
-    <div id="app">{{arr}}</div>
-    <script>
-        //控制id为app的区域
 
-        // $mount
+<body>
+    <div id="app">{{msg}}
+        <div v-text="msg1"></div>
+        <div v-bind:style="[styleObjectA, styleObjectB]">{{msg}}</div>
+        <!-- <svg :view-box.camel="viewBox"></svg> -->
+        <div v-bind:text-content.prop="text"></div>
+        <button v-on:click="add(5,$event)">点击+5</button>
+        <p>被点击了{{counter}}</p>
+        <div @click="alert('div')">
+            <button @click.stop="alert('button')">点击</button>
+        </div>
+        <form v-on:submit.prevent="onSubmit">
+            <input type="submit">
+        </form>
+        <div @click.capture="alert('div')">
+            <button @click="alert('button')">点击</button>
+        </div>
+        <div :style="{ backgroundColor: 'red' }" @click.self="alert('div')">
+            <button @click="alert('button')">点击</button>
+        </div>
+        <button @click.once="alert('button')">点击</button>
+        <div>
+            <ul>
+                <li v-for="item in persons">{{item}}</li>
+            </ul>
+        </div>
+        <div>
+            <!-- <ul>
+                <li v-for="user in users" v-if="user.isActive" :key="user.id">
+                    {{ user.name }}
+                </li>
+            </ul> -->
+            <ul>
+                <li v-for="user in activeUsers" :key="user.id">
+                    {{ user.name }}
+                </li>
+            </ul>
+            <!-- <ul>
+                <li
+                  v-for="user in users"
+                  v-if="shouldShowUsers"
+                  :key="user.id"
+                >
+                  {{ user.name }}
+                </li>
+              </ul> -->
+            <!-- <ul v-if="shouldShowUsers">
+                <li v-for="user in users" :key="user.id">
+                    {{ user.name }}
+                </li>
+            </ul> -->
+        </div>
+        <div>
+            <input type="text" v-model.lazy="msg">
+            <input type="checkbox" id="lj" value="小辣椒" v-model="checkedNames">
+            <label for="lj">小辣椒</label>
+          
+            <input type="checkbox" id="mz" value="小米粥" v-model="checkedNames">
+            <label for="mz">小米粥</label>
+            
+            <input type="checkbox" id="rm" value="肉夹馍" v-model="checkedNames">
+            <label for="rm">肉夹馍</label>
+            <br>
+            <span>被选中的人有: {{ checkedNames }}</span>
+        </div>
+        <div>
+            <input type="radio" id="lj" value="小辣椒" v-model="picked">
+            <label for="lj">小辣椒</label>
+            <input type="radio" id="mz" value="小米粥" v-model="picked">
+            <label for="mz">小米粥</label>
+            <input type="radio" id="rm" value="肉夹馍" v-model="picked">
+            <label for="rm">肉夹馍</label>
+            <br>
+            <span>被选中的人: {{ picked }}</span>
+        </div>
+        <div>
+            <p >多行文本为：{{ message }}</p>
+            <textarea v-model="message" placeholder="添加文本"></textarea>
+        </div>
+        <div>
+            <select v-model="selected">
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+              </select>
+              <span>选择: {{ selected === '请选择' ? '' : selected }}</span>
+        </div>
+        <div>
+            <select v-model="selected">
+                <option :disabled="selected">请选择</option>
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+              </select>
+              <span>选择: {{ selected === '请选择' ? '' : selected }}</span>
+        </div>
+        <div>
+            <select v-model="sel" multiple>
+                <option>A</option>
+                <option>B</option>
+                <option>C</option>
+              </select>
+              <span>选择: {{ sel }}</span>
+        </div>
+        <input v-model.number="age" type="number">
+        <input v-model.trim="msg1">
+    </div>
+    <script>
         const vm = new Vue({
-            el:"#app",
-            data:{
-                msg:"你长得真好看",
-                arr:[1,2,3]
+            el: "#app",
+            data: {
+                viewBox: "0 0 10 10",
+                msg: "你长得真好看",
+                msg1: "小仙女",
+                styleObjectA: {
+                    fontSize: '14px',
+                    color: 'red'
+                },
+                styleObjectB: {
+                    'backgroundColor': "green"
+                },
+                text: "xialajiao",
+                counter: 0,
+                persons: ['小馒头', '小米粥', '肉夹馍', '小辣椒'],
+                users: [{
+                        name: 'shan',
+                        isActive: true,
+                        id: 1
+                    },
+                    {
+                        name: 'jc',
+                        isActive: false,
+                        id: 2
+                    },
+                    {
+                        name: 'cst',
+                        isActive: false,
+                        id: 3
+                    },
+                    {
+                        name: 'mz',
+                        isActive: true,
+                        id: 4
+                    },
+                ],
+                // activeUsers: [],
+                shouldShowUsers: false,
+                checkedNames: [],
+                picked:'',
+                message:'',
+                selected:'请选择',
+                sel:[],
+                age:12
+            },
+            computed: {
+                activeUsers: function () {
+
+                    return this.users.filter(function (user) {
+
+                        return user.isActive
+
+                    })
+                }
+            },
+            methods: {
+                add: function (num, e) {
+                    this.counter += num;
+                    console.log(e.target);
+                },
+                alert(str) {
+                    alert(str);
+                },
+                onSubmit() {
+                    console.log('submit');
+                }
             }
         })
-
-
-        vm.$mount('#app');
-        vm.msg = "小仙女";
-        //数据渲染之后，不会立即拿到渲染后的数据，因为vue更新dom操作是异步的
-        // 1. 使用vm.$nextTick
-        vm.$nextTick().then(() => {
-        console.log(vm.$el.innerHTML); 
-        })
-        // 2. 使用Vue.nextTick
-        Vue.nextTick().then(() => {
-        console.log(vm.$el.innerHTML); 
-        })
-
-        // 不会渲染页面：
-        // 数组：
-        //1.更改数组长度
-        // 2.通过索引更改数组
-        //对象：
-        // 增加或删除对象
-
-
-
-
-
-
-
+        // vm.activeUsers = vm.users.filter(user => user.isActive);
+        vm.users.forEach(element => {
+            if(element.isActive){
+                this.shouldShowUsers = true;
+            }else{
+                this.shouldShowUsers = false;
+            }
+        });
     </script>
 </body>
+
 </html>
