@@ -1,192 +1,267 @@
-# 计算属性
-有些时候，我们在模板中放入了过多的逻辑，从而导致模板过重，且难以维护。例如：
-```html
-<div id="app">
-  {{ message.split('').reverse().join('') }}
-</div>
-```
-碰到这样的情况，我们必须看一段时间才能意识到，这里是想要显示变量message的翻转字符串，而且，一旦我们想要在模板中多次使用翻转字符串时，会更加麻烦。
-所以，当我们处理复杂逻辑时，都应该使用计算属性。
+# 侦听器
+侦听属性，响应数据（data&computed）的变化，当数据变化时，会立刻执行对应函数，
 
-## 基础用法
+## 值类型
 
-计算属性是Vue配置对象中的属性，使用方式如下：
-```html
-<div id="app">
-  <!-- 计算属性的值可以像data数据一样，直接被使用 -->
-  {{ someComputed }}
-</div>
-```
-```js
-const vm = new Vue({
-  el: '#app',
-  computed: {
-    // 返回的值，就是计算属性的值
-    someComputed () {
-      return 'some values'
-    }
-  }
-})
-```
+### 函数类型
 
-例如，我们想要获取到一串字符串的翻转字符串，我们可以利用计算属性来做：
-```html
-<div id="app">
-  <p>原始字符串: "{{ msg }}"</p>
-  <p>翻转字符处啊: "{{ reversedMsg }}"</p>
-</div>
-```
+例：
+
 ```js
 const vm = new Vue({
   el: '#app',
   data: {
-    msg: 'Hello'
+    msg: 'hello，你好呀，我是小辣椒',
   },
-  computed: {
-    reversedMsg: function () {
-      return this.msg.split('').reverse().join('');
+  watch: {
+    msg () {
+      console.log('msg的值改变啦~');
     }
   }
 })
+// 更改msg的值
+vm.msg = 'hello~~~~'; // 此时会在控制台中打印出` msg的值改变啦 `
 ```
-我们可以看到，reversedMsg的值取决于msg的值，所以，当我们更改msg的值是，reversedMsg的值也会随之更改。
 
-## 计算属性 vs 方法
-其实，我们上述的功能，利用方法也可以实现，如：
-```html
-<div id="app">
-  <p>原始字符串: "{{ msg }}"</p>
-  <p>翻转字符串: "{{ reversedMsg() }}"</p>
-</div>
+侦听器函数，会接收两个参数，第一个参数为newVal(被改变的数据)，第二个参数为oldVal(赋值新值之前的值)。如在上述代码中，将侦听器watch更改一下，如：
+```js
+watch: {
+  msg (newVal,oldVal) {
+    conosle.log(newVal, oldVal);
+  }
+}
+
+// 更改msg的值
+vm.msg = 'hello~~~~'; // 此时会在控制台中打印出`hello，你好呀，我是小辣椒  hello~~~~`
 ```
+
+### 字符串类型
+值为方法名字，被侦听的数据改变时，会执行该方法。
 ```js
 const vm = new Vue({
-  el: '#app',
+  el: '#app'
   data: {
-    msg: 'Hello'
+    msg: '小辣椒'
+  },
+  watch: {
+    msg: 'msgChange'
   },
   methods: {
-    reversedMsg: function () {
-      return this.msg.split('').reverse().join('');
+    msgChange () {
+      console.log('msg的值改变啦');
     }
   }
 })
+vm.msg = 'hello'; // 此时msgChange函数会执行，控制台中打印出 ` msg的值改变啦 `
 ```
-虽然在表达式中调用方法也可以实现同样的效果，但是使用``计算属性``和使用``方法``有着本质的区别。
-当使用方法时，每一次页面重新渲染，对应的方法都会重新执行一次，如：
-```html
-<div id="app">
-  <p>{{ name }}</p>
-  <p>{{ reversedMsg() }}</p>
-</div>
-```
+
+### 对象类型
+写成对象类型时，可以提供选项。
+
+#### handler
+必需。handler时被侦听的数据改变时执行的回调函数。
+handler的值类型为函数/字符串，写成字符串时为一个方法的名字。
 ```js
 const vm = new Vue({
-  el: '#app',
+  el: '#app'
   data: {
-    msg: 'Hello',
-    name: 'shanshan'
+    msg: '小辣椒'
   },
-  methods: {
-    reversedMsg: function () {
-      console.log('方法执行啦');
-      return this.msg.split('').reverse().join('');
+  watch: {
+    msg: {
+      handler () {
+        console.log('msg的值改变啦');
+      }
     }
   }
 })
-vm.name = 'duyi';  
+vm.msg = 'hello'; // 此时回调函数会执行，控制台中打印出 ` msg的值改变啦 `
 ```
-在上面的例子中我们可以看到，一旦更改name的值，页面会重新渲染，此刻控制台中打印出`方法执行啦`这串字符串，代表着reversedMsg这个函数执行了，但是我们并不需要该方法执行，因为改动的数据和这个函数没有任何关系，如果这个函数内的逻辑很复杂，那么对于性能来讲，也是一种消耗。
 
-但是利用计算属性做，就不会有这样的现象出现，如：
+#### deep
+在默认情况下，侦听器侦听对象只侦听引用的变化，只有在给对象赋值时它才能被监听到。所以需要使用deep选项，让其可以发现对象内部值的变化，将deep的值设置为true，那么无论该对象被嵌套的有多深，都会被侦听到。
+
 ```js
 const vm = new Vue({
-  el: '#app',
+  el: '#app'
   data: {
-    msg: 'Hello',
-    name: 'shanshan'
+    personObj: {
+      name: '邓旭明',
+      age: 88
+    }
   },
-  computed: {
-    reversedMsg: function () {
-      console.log('计算执行啦');
-      return this.msg.split('').reverse().join('');
+  watch: {
+    personObj: {
+      handler () {
+        console.log('对象的值改变啦');
+      }，
+      deep: true   // 开启深度侦听
     }
   }
 })
-vm.name = 'duyi';  
+vm.obj.name = '老邓头'; // 此时回调函数会执行，控制台中打印出 ` 对象的值改变啦 `
 ```
-此时可以看到，当给数据name重新赋值时，计算属性并没有执行。
-所以，计算属性和方法的最本质的区别，是：<span style="font-weight: bold;">计算属性是基于响应式依赖进行缓存的</span>，计算属性的值一直存于缓存中，只要它依赖的data数据不改变，每次访问计算属性，都会立刻返回缓存的结果，而不是再次执行函数。而方法则是每次触发重新渲染，调用方法将总会再次执行函数。
+注意，当对象的属性较多的时候，性能开销会比较大，此时可以监听对象的某个属性，这个后面再说。
 
-> 那么，为什么需要缓存呢？
-
-假如说，我们有一个计算属性A，它需要遍历一个巨大的数组并且做巨大的计算。然后我们需要使用到这个计算属性A，如果没有缓存，我们就会再次执行A的函数，这样性能开销就变得很大了。
-
-## 深入计算属性
-计算属性除了写成一个函数之外，还可以写成一个对象，对象内有两个属性，getter&setter，这两个属性皆为函数，写法如下：
+#### immediate
+加上immediate选项后，回调将会在侦听开始之后立刻被调用。而不是等待侦听的数据更改后才会调用。
 ```js
 const vm = new Vue({
-  el: '#app',
-  computed: {
-    fullName: {
-      getter () {
-        // 一些代码
+  el: '#app'
+  data: {
+    msg: '小辣椒'
+  },
+  watch: {
+    msg: {
+      handler () {
+        console.log('回调函数执行啦');
       },
-      setter () {
-        // 一些代码
-      }
+      immediate: true
     }
   }
 })
-```
+// 此时未更改msg的值，就会在控制台打印出来` 回调函数执行啦 `
+``` 
 
-### getter 读取
-在前面，我们直接将计算属性写成了一个函数，这个函数即为getter函数。也就是说，计算属性默认只有getter。
-getter的this，被自动绑定为Vue实例。
-
-> 何时执行？
-
-当我们去获取某一个计算属性时，就会执行get函数。
+### 数组类型
+可以将多种不同值类型写在一个数组中。如：
 
 ```js
 const vm = new Vue({
-  el: '#app',
+  el: '#app'
   data: {
-    msg: 'Hello'
+    msg: '小辣椒'
   },
-  computed: {
-    reversedMsg: {
-      getter () {
-        return this.msg.split('').reverse().join('');
+  watch: {
+    msg: [
+      'msgChange',
+      function () {},
+      {
+        handler () {},
+        deep: true,
+        immediate: true
       }
-    }
+    ]
   }
 })
 ```
 
-### setter 设置
-可选，set函数在给计算属性重新赋值时会执行。
-参数：为被重新设置的值。
-setter的this，被自动绑定为Vue实例。
+## 键类型
 
+### 正常对象key值
+以上演示的都是正常的对象key值，这里不再赘述。
 
+### 字符串类型key值
+当key值类型为字符串时，可以实现监听对象当中的某一个属性，如：
 ```js
 const vm = new Vue({
+  el: '#app'
+  data: {
+    personObj: {
+      name: '小辣椒',
+      age: 88
+    }
+  },
+  watch: {
+    'personObj.name' () {
+      console.log('对象的值改变啦');
+    }
+  }
+})
+vm.obj.name = '老邓头'; // 此时回调函数会执行，控制台中打印出 ` 对象的值改变啦 `
+```
+
+## vm.$watch
+Vue实例将会在实例化时调用\$watch，遍历watch对象的每一个属性。
+我们也可以利用vm.\$watch来实现侦听，用法与watch选项部分一致，略有不同。以下为使用方法。
+
+1. 侦听某个数据的变化
+```js
+// 1. 三个参数，一参为被侦听的数据；二参为数据改变时执行的回调函数；三参可选，为设置的选项对象
+vm.$watch(
+  'msg', 
+  function () {
+    // 干了点事儿
+  }, 
+  {
+    deep: Boolean, 
+    immediate: Boolean
+  }
+)
+
+// 2. 二个参数，一参为被侦听的数据；二参为选项对象，其中handler属性为必需，是数据改变时执行的回调函数，其他属性可选。
+vm.$watch(
+  'msg', 
+  {
+    handler () {
+      // 干了点事儿
+    },
+    deep: Boolean, 
+    immediate: Boolean
+  }
+)
+```
+
+2. 侦听某个对象属性的变化
+```js
+vm.$watch('obj.name', /**参数和上面一之*/)
+```
+3. 当监听的数据的在初始不确定，由多个数据得到时，此时可以将第一个参数写成函数类型
+```js
+vm.$watch(function () {
+  // 表达式`this.a + this.b`每次得出一个不同的结果时该函数都会被调用
+  // 这就像监听一个未被定义的计算属性
+  return this.a + this.b;
+}, /**参数和上面一致*/)
+```
+
+侦听器函数执行后，会返回一个取消侦听函数，用来停止触发回调：
+```js
+const unwatch = vm.$watch('msg', function () {});
+unwatch(); // 执行后会取消侦听msg数据
+```
+使用unwatch时，需要注意的是，在带有immediate选项时，不能在第一次回调时取消侦听数据。
+```js
+const unwatch = vm.$watch('msg', function () {
+    // 干了点儿事
+    unwatch();  // 此时会报错
+  },{
+    immediate: true
+  }
+})
+```
+如果仍然希望在回调内部用一个取消侦听的函数，那么可以先检查该函数的可用性：
+```js
+var unwatch = vm.$watch('msg', function () {
+    // 干了点儿事
+    if(unwatch) {
+      unwatch();  
+    }
+  },{
+    immediate: true
+  }
+})
+```
+
+## 侦听器 vs 计算属性
+1. 两者都可以观察和响应Vue实例上的数据的变动。
+2. watch擅长处理的场景是：一个数据影响多个数据。计算属性擅长处理的场景是：多个数据影响一个数据。
+
+3. 在侦听器中可以执行异步，但是在计算属性中不可以，例：
+
+使用侦听器：
+```js
+var vm = new Vue({
   el: '#app',
   data: {
-    msg: 'Hello',
-    firstStr: ''
+    question: '',
   },
-  computed: {
-    reversedMsg: {
-      getter () {
-        return this.msg.split('').reverse().join('');
-      },
-      setter (newVal) {
-        this.firstStr = newVal[0];
-      }
+  watch: {
+    question () {
+      setTimeout(() => {
+        alert(this.question);
+      }, 1000)
     }
   }
 })
 ```
-要注意，即使给计算属性赋了值，计算属性也不会改变，在重复一遍，只有当依赖的响应式属性变化了，计算属性才会重新计算。

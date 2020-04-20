@@ -10,32 +10,53 @@
 
 <body>
     <div id="app">
-        {{ someComputed }},{{desc}}
+       {{obj}}
     </div>
     <script>
         const vm = new Vue({
             el: "#app",
             data: {
-                name:"小辣椒",
-                looks:"漂亮"
-            },
-            computed: {
-                someComputed() {
-                    return 'some values'
-                },
-                desc:{
-                    get(){
-                        console.log("计算属性被读取了");
-                        return `${this.name}看起来很${this.looks}`  
-                    },
-                    set(){
-                        console.log("计算属性被设置了");
-                    }
+                msg:"1222",
+                obj: {
+                    name: "小辣椒",
+                    looks: "漂亮"
                 }
             },
-            methods: {
+            methods:{
+                msgChange(){
+                    console.log("msg改变了")
+                }
+            },
+            watch: {
+                msg:'msgChange',
+                obj: {
+                    handler() {
+                        console.log("改变了")
+                    },
+                    deep:true,
+                    immediate: true
+                }
 
             }
+        })
+        vm.$watch('msg',function(){
+            console.log("msg改变了")
+        })
+        vm.$watch('obj.name',{
+            handler(){
+                console.log('name改变了')
+            },
+            deep:true,
+            immediate:true
+        })
+        vm.$watch(function(){
+            return this.msg + this.obj.name
+        },{
+            handler(){
+                console.log('name改变了')
+            },
+            deep:true,
+            // immediate:true
         })
     </script>
 </body>
