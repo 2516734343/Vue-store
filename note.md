@@ -1,267 +1,164 @@
-# 侦听器
-侦听属性，响应数据（data&computed）的变化，当数据变化时，会立刻执行对应函数，
+# vue-resource
+在Vue中实现异步加载需要使用到vue-resource库，利用该库发送ajax。
 
-## 值类型
+## 引入vue-resource
+```js
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+```
+要注意的是，vue-resource依赖于Vue，所以要先引入Vue，再引入vue-resource。
 
-### 函数类型
+引入vue-resource之后，在Vue的全局上会挂载一个\$http方法，在vm.\$http方法上有一系列方法，每个HTTP请求类型都有一个对应的方法。
 
-例：
+vue-resource使用了promise，所以\$http中的方法的返回值是一个promise。
+
+## 请求方法
+
+### POST请求
+用于提交数据
+<br/>
+
+<span style="font-weight: bold;">常用data格式：</span>
+  - 表单提交：multipart/form-data，比较老的网站会使用表单提交去获取数据，现在基本都不用表单提交，而是使用ajax，但是现在表单提交仍然存在，有时候需要做图片上传、文件上传。
+  - 文件上传：application/json，现在大多数情况下都是用这个格式
+<br/>
+
+<span style="font-weight: bold;">使用方法：</span>vm.\$http.post(url, [body], [options])
+- url: 必需，请求目标url
+- body: 非必需，作为请求体发送的数据
+- options：非必需，作为请求体发送的数据
 
 ```js
-const vm = new Vue({
-  el: '#app',
-  data: {
-    msg: 'hello，你好呀，我是小辣椒',
+this.$http.post('https://developer.duyiedu.com/vue/setUserInfo', {
+    name: this.name,
+    mail: this.mail
+  })
+  .then(res => {
+    console.log(res);
+  })
+  .catch(error => {
+    console.log(error);
+  })
+```
+
+### GET请求
+获取数据
+
+<span style="font-weight: bold;">使用方法：</span>vm.\$http.get(url, [options])
+
+```js
+this.$http.get('https://developer.duyiedu.com/vue/getUserInfo')
+  .then(res => {
+    console.log(res);
+  })
+  .catch(error => {
+    console.log(error);
+  })
+```
+
+在get请求时传参：
+```js
+this.$http.get('https://developer.duyiedu.com/vue/getUserInfo'， {
+  params: {
+    id: 'xxx'
+  }
+})
+  .then(res => {
+    console.log(res);
+  })
+  .catch(error => {
+    console.log(error);
+  })
+```
+
+### PUT请求
+更新数据，将所有的数据全都推送到后端
+<span style="font-weight: bold;">使用方法：</span>vm.\$http.put(url, [body], [config])
+
+### PATCH请求
+更新数据，只将修改的数据全都推送到后端
+<span style="font-weight: bold;">使用方法：</span>vm.\$http.patch(url, [body], [config])
+
+### DELETE请求
+删除数据
+<span style="font-weight: bold;">使用方法：</span>vm.\$http.delete(url, [config])
+
+### HEAD请求
+请求头部信息
+<span style="font-weight: bold;">使用方法：</span>vm.\$http.head(url, [config])
+
+### JSONP请求
+除了jsonp以外，以上6种的API名称是标准的HTTP方法。
+<br />
+<span style="font-weight: bold;">使用方法：</span>vm.\$http.jsonp(url, [options]);
+
+```js
+this.$http.jsonp('https://developer.duyiedu.com/vue/jsonp').then(res => {
+  this.msg = res.bodyText;
+});
+
+
+this.$http.jsonp('https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su', {
+  params: {
+    wd: 'nn',
   },
-  watch: {
-    msg () {
-      console.log('msg的值改变啦~');
-    }
-  }
+  jsonp: 'cd', //jsonp默认是callback,百度缩写成了cb，所以需要指定下 
 })
-// 更改msg的值
-vm.msg = 'hello~~~~'; // 此时会在控制台中打印出` msg的值改变啦 `
+  .then(res => {
+    console.log(res);
+  })
 ```
 
-侦听器函数，会接收两个参数，第一个参数为newVal(被改变的数据)，第二个参数为oldVal(赋值新值之前的值)。如在上述代码中，将侦听器watch更改一下，如：
-```js
-watch: {
-  msg (newVal,oldVal) {
-    conosle.log(newVal, oldVal);
-  }
-}
+## options 参数说明
 
-// 更改msg的值
-vm.msg = 'hello~~~~'; // 此时会在控制台中打印出`hello，你好呀，我是小辣椒  hello~~~~`
+参数 | 类型 | 描述  
+:-: | :-: | :-:
+url | String | 请求目标url |
+body | Object, FormData, string | 作为请求体发送的数据 |
+headers | Object | 作为请求头部发送的头部对象 |
+params | Object | 作为URL参数的参数对象 |
+method | String | HTTP方法 (例如GET，POST，...) |
+responseType | String | 设置返回数据的类型 |
+timeout | Number | 在请求发送之前修改请求的回调函数 |
+credentials | Boolean | 是否需要出示用于跨站点请求的凭据 |
+emulateHTTP | Boolean | 是否需要通过设置X-HTTP-Method-Override头部并且以传统POST方式发送PUT，PATCH和DELETE请求。 |
+emulateJSON | Boolean |  设置请求体的类型为application/x-www-form-urlencoded |
+before | function(request) | 在请求发送之前修改请求的回调函数 |
+uploadProgress | function(event) | 用于处理上传进度的回调函数 |
+downloadProgress | function(event) | 用于处理下载进度的回调函数 |
+
+## 响应对象
+通过如下属性和方法处理一个请求获取到的响应对象：
+
+### 属性
+
+属性 | 类型 | 描述  
+:-: | :-: | :-:
+url | String | 响应的 URL 源 |
+body | Object, Blob, string | 响应体数据 |
+headers | Header | 请求头部对象 |
+ok | Boolean | 当 HTTP 响应码为 200 到 299 之间的数值时该值为 true |
+status | Number | HTTP 响应码 |
+statusText | String | HTTP 响应状态 |
+
+### 方法
+
+方法 |  描述  
+:-: | :-:
+text() |  以字符串方式返回响应体 |
+json() | 以格式化后的 json 对象方式返回响应体 |
+blob() |  以二进制 Blob 对象方式返回响应体 |
+
+以json()为例：
+
+```js
+this.$http.get('https://developer.duyiedu.com/vue/getUserInfo')
+  .then(res => {
+    return res.json();
+  })
+  .then(res => {
+    console.log(res);
+  })
 ```
 
-### 字符串类型
-值为方法名字，被侦听的数据改变时，会执行该方法。
-```js
-const vm = new Vue({
-  el: '#app'
-  data: {
-    msg: '小辣椒'
-  },
-  watch: {
-    msg: 'msgChange'
-  },
-  methods: {
-    msgChange () {
-      console.log('msg的值改变啦');
-    }
-  }
-})
-vm.msg = 'hello'; // 此时msgChange函数会执行，控制台中打印出 ` msg的值改变啦 `
-```
-
-### 对象类型
-写成对象类型时，可以提供选项。
-
-#### handler
-必需。handler时被侦听的数据改变时执行的回调函数。
-handler的值类型为函数/字符串，写成字符串时为一个方法的名字。
-```js
-const vm = new Vue({
-  el: '#app'
-  data: {
-    msg: '小辣椒'
-  },
-  watch: {
-    msg: {
-      handler () {
-        console.log('msg的值改变啦');
-      }
-    }
-  }
-})
-vm.msg = 'hello'; // 此时回调函数会执行，控制台中打印出 ` msg的值改变啦 `
-```
-
-#### deep
-在默认情况下，侦听器侦听对象只侦听引用的变化，只有在给对象赋值时它才能被监听到。所以需要使用deep选项，让其可以发现对象内部值的变化，将deep的值设置为true，那么无论该对象被嵌套的有多深，都会被侦听到。
-
-```js
-const vm = new Vue({
-  el: '#app'
-  data: {
-    personObj: {
-      name: '邓旭明',
-      age: 88
-    }
-  },
-  watch: {
-    personObj: {
-      handler () {
-        console.log('对象的值改变啦');
-      }，
-      deep: true   // 开启深度侦听
-    }
-  }
-})
-vm.obj.name = '老邓头'; // 此时回调函数会执行，控制台中打印出 ` 对象的值改变啦 `
-```
-注意，当对象的属性较多的时候，性能开销会比较大，此时可以监听对象的某个属性，这个后面再说。
-
-#### immediate
-加上immediate选项后，回调将会在侦听开始之后立刻被调用。而不是等待侦听的数据更改后才会调用。
-```js
-const vm = new Vue({
-  el: '#app'
-  data: {
-    msg: '小辣椒'
-  },
-  watch: {
-    msg: {
-      handler () {
-        console.log('回调函数执行啦');
-      },
-      immediate: true
-    }
-  }
-})
-// 此时未更改msg的值，就会在控制台打印出来` 回调函数执行啦 `
-``` 
-
-### 数组类型
-可以将多种不同值类型写在一个数组中。如：
-
-```js
-const vm = new Vue({
-  el: '#app'
-  data: {
-    msg: '小辣椒'
-  },
-  watch: {
-    msg: [
-      'msgChange',
-      function () {},
-      {
-        handler () {},
-        deep: true,
-        immediate: true
-      }
-    ]
-  }
-})
-```
-
-## 键类型
-
-### 正常对象key值
-以上演示的都是正常的对象key值，这里不再赘述。
-
-### 字符串类型key值
-当key值类型为字符串时，可以实现监听对象当中的某一个属性，如：
-```js
-const vm = new Vue({
-  el: '#app'
-  data: {
-    personObj: {
-      name: '小辣椒',
-      age: 88
-    }
-  },
-  watch: {
-    'personObj.name' () {
-      console.log('对象的值改变啦');
-    }
-  }
-})
-vm.obj.name = '老邓头'; // 此时回调函数会执行，控制台中打印出 ` 对象的值改变啦 `
-```
-
-## vm.$watch
-Vue实例将会在实例化时调用\$watch，遍历watch对象的每一个属性。
-我们也可以利用vm.\$watch来实现侦听，用法与watch选项部分一致，略有不同。以下为使用方法。
-
-1. 侦听某个数据的变化
-```js
-// 1. 三个参数，一参为被侦听的数据；二参为数据改变时执行的回调函数；三参可选，为设置的选项对象
-vm.$watch(
-  'msg', 
-  function () {
-    // 干了点事儿
-  }, 
-  {
-    deep: Boolean, 
-    immediate: Boolean
-  }
-)
-
-// 2. 二个参数，一参为被侦听的数据；二参为选项对象，其中handler属性为必需，是数据改变时执行的回调函数，其他属性可选。
-vm.$watch(
-  'msg', 
-  {
-    handler () {
-      // 干了点事儿
-    },
-    deep: Boolean, 
-    immediate: Boolean
-  }
-)
-```
-
-2. 侦听某个对象属性的变化
-```js
-vm.$watch('obj.name', /**参数和上面一之*/)
-```
-3. 当监听的数据的在初始不确定，由多个数据得到时，此时可以将第一个参数写成函数类型
-```js
-vm.$watch(function () {
-  // 表达式`this.a + this.b`每次得出一个不同的结果时该函数都会被调用
-  // 这就像监听一个未被定义的计算属性
-  return this.a + this.b;
-}, /**参数和上面一致*/)
-```
-
-侦听器函数执行后，会返回一个取消侦听函数，用来停止触发回调：
-```js
-const unwatch = vm.$watch('msg', function () {});
-unwatch(); // 执行后会取消侦听msg数据
-```
-使用unwatch时，需要注意的是，在带有immediate选项时，不能在第一次回调时取消侦听数据。
-```js
-const unwatch = vm.$watch('msg', function () {
-    // 干了点儿事
-    unwatch();  // 此时会报错
-  },{
-    immediate: true
-  }
-})
-```
-如果仍然希望在回调内部用一个取消侦听的函数，那么可以先检查该函数的可用性：
-```js
-var unwatch = vm.$watch('msg', function () {
-    // 干了点儿事
-    if(unwatch) {
-      unwatch();  
-    }
-  },{
-    immediate: true
-  }
-})
-```
-
-## 侦听器 vs 计算属性
-1. 两者都可以观察和响应Vue实例上的数据的变动。
-2. watch擅长处理的场景是：一个数据影响多个数据。计算属性擅长处理的场景是：多个数据影响一个数据。
-
-3. 在侦听器中可以执行异步，但是在计算属性中不可以，例：
-
-使用侦听器：
-```js
-var vm = new Vue({
-  el: '#app',
-  data: {
-    question: '',
-  },
-  watch: {
-    question () {
-      setTimeout(() => {
-        alert(this.question);
-      }, 1000)
-    }
-  }
-})
-```
+## 最后的话
+很不幸，Vue官方已不再维护这个库了

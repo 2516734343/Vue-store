@@ -5,58 +5,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="index.css">
     <script src="./vue.js"></script>
+    <script src="./vue-resource.js"></script>
 </head>
 
 <body>
     <div id="app">
-       {{obj}}
+        <div class="username"><input type="text" placeholder="用户名" v-model="name"></dic>
+            <div class="mail"><input type="text" placeholder="邮箱" v-model="mail"></div>
+            <div class="upload-btn" @click="handleUpload">上传</div>
+            <div class="test-btn" @click="handleTest">测试jsonp</div>
+            <div class="show-btn" @click="handleShow">显示人物信息</div>
+            <ul class="person-list" v-if="personList.length">
+                <li class="person" v-for="person in personList">
+                    <span>{{ person.name }}</span>
+                    <span>{{ person.mail }}</span>
+                </li>
+            </ul>
+        </div>
     </div>
     <script>
         const vm = new Vue({
             el: "#app",
             data: {
-                msg:"1222",
-                obj: {
-                    name: "小辣椒",
-                    looks: "漂亮"
-                }
+                name: '',
+                mail: '',
+                msg: '',
+                personList: []
             },
-            methods:{
-                msgChange(){
-                    console.log("msg改变了")
+            methods: {
+                handleUpload() {
+                    this.$http.post('https://developer.duyiedu.com/vue/setUserInfo', {
+                        name: this.name,
+                        mail: this.mail
+                    }).then(res => {
+                        // console.log(res);
+                        this.msg = res.body.msg
+                    }).catch(error => {
+                        // console.log(error);
+                        this.msg = error.body.msg;
+                    })
+                },
+                handleShow() {
+                    this.$http.get('https://developer.duyiedu.com/vue/getUserInfo').then(res => {
+                        this.personList = res.body.data;
+                        // console.log(res.json());
+                        return res.json();
+                    }).then(res=>{
+                        console.log(res);
+                    })
+                },
+                handleTest() {
+                    // this.$http.jsonp('https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su').then(res=>{
+                    //     console.log(res);
+                    // })
+                    this.$http.jsonp('https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su', {
+                            params: {
+                                wd: 'nn',
+                            },
+                            jsonp: 'cb', //jsonp默认是callback,百度缩写成了cb，所以需要指定下 
+                        })
+                        .then(res => {
+                            console.log(res);
+                        })
                 }
             },
             watch: {
-                msg:'msgChange',
-                obj: {
-                    handler() {
-                        console.log("改变了")
-                    },
-                    deep:true,
-                    immediate: true
+                msg() {
+                    if (this.msg === '') {
+                        return;
+                    }
+                    alert(this.msg);
+                    this.msg = ''
                 }
-
             }
-        })
-        vm.$watch('msg',function(){
-            console.log("msg改变了")
-        })
-        vm.$watch('obj.name',{
-            handler(){
-                console.log('name改变了')
-            },
-            deep:true,
-            immediate:true
-        })
-        vm.$watch(function(){
-            return this.msg + this.obj.name
-        },{
-            handler(){
-                console.log('name改变了')
-            },
-            deep:true,
-            // immediate:true
         })
     </script>
 </body>
