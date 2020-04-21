@@ -5,199 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="index.css">
     <script src="./vue.js"></script>
-    <script src="./axios.js"></script>
 </head>
 
 <body>
     <div id="app">
-        <div class="username"><input type="text" placeholder="用户名" v-model="name"></dic>
-            <div class="mail"><input type="text" placeholder="邮箱" v-model="mail"></div>
-            <div class="upload-btn" @click="handleUpload">上传</div>
-            <div class="show-btn" @click="handleShow">显示人物信息</div>
-            <button @click="handleCancelGet">取消get请求</button>
-            <ul class="person-list" v-if="personList.length">
-                <li class="person" v-for="person in personList">
-                    <span>{{ person.name }}</span>
-                    <span>{{ person.mail }}</span>
-                </li>
-            </ul>
-        </div>
+        
     </div>
     <script>
-        // axios.defaults.baseURL = 'https://developer.duyiedu.com/vue';
-        axios.defaults.baseURL = 'http://127.0.0.1:12306';
-        axios.defaults.timeout = 1000;
-        // const instance = axios.create({
-        //     baseURL: 'https://developer.duyiedu.com/vue'
-        // })
-        // const aInstance = axios.create({
-        //     baseURL: 'https://developer.duyiedu.com/vue/a'
-        // })
-
-        // const bInstance = axios.create({
-        //     baseURL: 'https://developer.duyiedu.com/vue/b'
-        // })
-        axios.interceptors.request.use(config => {
-            // config.method = 'post';
-            // config.url = '/setUserInfo';
-
-            if (config.method === 'get') {
-                // ...
-            } else if (config.method === 'post') {
-                // ..
-            }
-            return config;
-        }, error => {//请求发出之前的错误
-            alert('xxxx');
-            return Promise.reject(error);
-        });
-
-        const interceptor = axios.interceptors.response.use(response => {
-            if (response.status === 200) {
-                return response.data;
-            } else {
-                // ...返回响应
-            }
-        }, error => {
-            if (error.response) {
-                console.log('响应时错误');
-            } else if (error.request) {
-                // 请求时错误
-                console.log('请求时错误');
-            }
-            // console.log(error.request);
-            // console.log(error.response);
-            return Promise.reject(error);
-        });
-
-        //移除拦截器
-        //  axios.interceptors.response.eject(interceptor);
-
-        //为一个实例添加拦截器
-        // const instance = axios.create();
-        // instance.interceptors.request.use();
-
-        const source = axios.CancelToken.source();
-
-
         const vm = new Vue({
             el: "#app",
             data: {
-                name: '',
-                mail: '',
-                msg: '',
-                personList: []
+
             },
+            template:`<div class="app-10"></div>`,
             methods: {
-                handleUpload() {
-                    const {
-                        name,
-                        mail
-                    } = this;
-                    axios.post('setUserInfo', {
-                        name,
-                        mail
-                    }, {
-                        baseURL: 'https://developer.duyiedu.com/vue',
-                    }).then(res => {
-                        this.msg = res.data.msg;
-                    })
-                },
-                handleShow() {
-                    //    axios({
-                    //        method:'get',
-                    //        baseURL: 'https://developer.duyiedu.com/vue',
-                    //        url: '/getUserInfo'
-                    //    }).then(res=>{
-                    //        this.msg = res.data.msg;
-                    //        this.personList = res.data.data;
-                    //    })
-
-                    // axios('/getUserInfo', {
-                    //     method: 'get',
-                    //     baseURL: 'https://developer.duyiedu.com/vue',
-                    // }).then(res => {
-                    //     this.msg = res.data.msg;
-                    //     this.personList = res.data.data;
-                    // })
-
-                    axios.get('/getUserInfo', {
-                        cancelToken: source.token
-                    }).then(res => {
-                        this.msg = res.data.msg;
-                        this.personList = res.data.data;
-                    }).catch(error => {
-                        // console.log(res);
-                        // const msg = error.message;
-                        // alert(msg);
-
-                        console.log(error.request); // 请求时错误
-                        console.log(error.response); // 响应时错误
-
-                        if (error.response) {
-                            const {
-                                status
-                            } = error.response;
-                            switch (status) {
-                                case 404:
-                                    alert('url地址错误');
-                                    break;
-                                case 401:
-                                    alert('xxx')
-                            }
-                        } else if (error.request) {
-                            // console.log('请求时错误');
-                        } else {
-                            console.log(error.message);//取消请求
-                        }
-                    })
-
-                    // axios.get('/getUserInfo').then(res => {
-                    //     this.msg = res.data.msg;
-                    //     this.personList = res.data.data;
-                    // })
-
-                    // instance.get('/getUserInfo').then(res => {
-                    //     this.msg = res.data.msg;
-                    //     this.personList = res.data.data;
-                    // })
-
-                    // aInstance.get('/xxx');
-                    // bInstance.get('/xxx');
-
-                    // axios.get('/a').then(res => {
-
-                    // });
-
-                    // axios.get('/b')
-
-                    // axios.get('/c');
-
-                    //处理并发
-                    axios.all([
-                        axios.post('/setUserInfo', {
-                            name: 'xlj',
-                            mail: 'haah@qq.com'
-                        }),
-                        axios.get('/getUserInfo'),
-                    ]).then(axios.spread((postRes, getRes) => {
-                        console.log(postRes, getRes);
-                    }));
-                },
-                handleCancelGet() {
-                    source.cancel('取消请求');
-                }
-            },
-            watch: {
-                msg() {
-                    if (this.msg === '') {
-                        return;
-                    }
-                    alert(this.msg);
-                    this.msg = ''
-                }
+               
             }
         })
     </script>
