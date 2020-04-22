@@ -10,88 +10,99 @@
 </head>
 
 <body>
-
-
   <div id="app">
-    <div :style="{fontSize: postFontSize + 'em'}">
-      <blog-post v-for="post in posts" 
-      @enlarge-text="postFontSize += $event"
-      :post="post" 
-      :key="post.id"></blog-post>
-    </div>
-    <base-input @focus="onFocus" @blur="onBlur"></base-input>
+    <!-- <my-cmp>这是写在组件标签内的文字</my-cmp> -->
+    <!-- <my-cmp>{{ name }}</my-cmp> -->
+    <!-- <my-button>Button</my-button> -->
+    <!-- <my-cmp>
+      <template v-slot:header>
+        <div>頭部</div>
+      </template>
+      <template v-slot:default>
+        <div>主要内容</div>
+      </template>
+
+      <template v-slot:footer>
+        <div>底部</div>
+      </template>
+    </my-cmp>  -->
+    <my-cmp>
+      <template v-slot:default="slotProps">
+        {{ slotProps.user.name }}
+      </template>
+    </my-cmp>
+
+    <!-- <my-cmp v-slot="{ user: person }">
+      {{ person.name }}
+    </my-cmp> -->
   </div>
 
   <script>
-       // 点击了子组件的button -> 告诉父组件去增加字号 -> 可以更改控制字体大小的数据
-    // 子组件内触发事件   在父组件内监听子组件的事件
-    // 自定义事件 enlarge-text
-    // $emit(name)
-    
-    // v-bind .sync 语法糖 :prop @updata:prop
-    Vue.component('blog-post', {
-      props: {
-        post: Object
+    // 插槽 slot
+    // 知识点 微多 杂 
+    // 默认 有 用你的 没有 用我的
+    // v-slot
+    // <slot></slot> name"default"
+   Vue.component('my-cmp', {
+      data () {
+        return {
+          user: {
+            name: '小辣椒',
+            age: 18
+          }
+        }
       },
       template: `
         <div>
-          <h3>{{ post.title }}</h3>
-          <button @click="$emit('enlarge-text', 0.2)">放大字號</button>
-          <div>{{ post.content }}</div>
+          <slot :user="user"></slot>
         </div>
       `
-    })
+   })
 
-    Vue.component('base-input', {
-      mounted () {
-        console.log(this.$listeners);
-      },
-      template: `
-        <label>
-          姓名：
-          <input type="text" v-on="$listeners"/>
-        </label>
-      `
-    })
+    // Vue.component('my-cmp', {
+    //   template: `
+    //     <div class="container">
+    //       <header>
+    //         <slot name="header"></slot>            
+    //       </header>
+    //       <main>
+    //         <slot></slot>
+    //       </main>
+    //       <footer>
+    //         <slot name="footer"></slot>            
+    //       </footer>
+    //     </div>
+    //   `
+    // })
+
+    // Vue.component('my-button', {
+      
+    //   template: `
+    //     <button>
+    //       <slot>Submit</slot>
+    //     </button>
+    //   `
+    // });
+
+    // Vue.component('my-cmp', {
+    //   data () {
+    //     return {
+    //       name: '杉杉'
+    //     }
+    //   },
+    //   template: `
+    //     <div>
+    //       xxx
+    //       <slot></slot>
+    //     </div>
+    //   `
+    // });
 
     const vm = new Vue({
       el: '#app',
       data: {
-        postFontSize: 1, 
-        posts: [{
-            title: '標題',
-            content: '内容内容内容',
-            id: 0
-          },
-          {
-            title: '標題1',
-            content: '内容内容内容',
-            id: 1
-          },
-          {
-            title: '標題2',
-            content: '内容内容内容',
-            id: 2
-          },
-          {
-            title: '標題3',
-            content: '内容内容内容',
-            id: 3
-          },
-        ]
+        name: '渡一'
       },
-      methods: {
-        onEnlargeText (e) {
-          this.postFontSize += e;
-        },
-        onFocus () {
-          console.log('focus');
-        },
-        onBlur () {
-          console.log('Blur');
-        },
-      },
-
     })
   </script>
 </body>
