@@ -13,58 +13,84 @@
 
 
   <div id="app">
-    father: {{ array }}
-    <button @click="array.push(4)">father 點擊</button>
-    <my-array :array="array"></my-array>
-
-    <!-- {{ count }}
-    <my-count :count="count"></my-count> -->
-<base-input type="radio"></base-input>
-    
+    <div :style="{fontSize: postFontSize + 'em'}">
+      <blog-post v-for="post in posts" 
+      @enlarge-text="postFontSize += $event"
+      :post="post" 
+      :key="post.id"></blog-post>
+    </div>
+    <base-input @focus="onFocus" @blur="onBlur"></base-input>
   </div>
 
   <script>
-   Vue.component('my-array', {
+       // 点击了子组件的button -> 告诉父组件去增加字号 -> 可以更改控制字体大小的数据
+    // 子组件内触发事件   在父组件内监听子组件的事件
+    // 自定义事件 enlarge-text
+    // $emit(name)
+    
+    // v-bind .sync 语法糖 :prop @updata:prop
+    Vue.component('blog-post', {
       props: {
-        array: Array
-      },
-      data () {
-        return {
-          myArray: this.array, // 引用 深度克隆
-        }
+        post: Object
       },
       template: `
         <div>
-          son: {{ myArray }}
-          <button @click="myArray.push(4)">son 點擊</button>
+          <h3>{{ post.title }}</h3>
+          <button @click="$emit('enlarge-text', 0.2)">放大字號</button>
+          <div>{{ post.content }}</div>
         </div>
       `
     })
 
-    size="str"
-    str = "    xxXX    ";
-
     Vue.component('base-input', {
-  inheritAttrs: false,
-  props: ['label', 'value'],
-  template: `
-    <label>
-      {{ label }}
-      <input
-        v-bind="$attrs"
-        v-bind:value="value"
-        v-on:input="$emit('input', $event.target.value)"
-      >
-    </label>
-  `,
-})
+      mounted () {
+        console.log(this.$listeners);
+      },
+      template: `
+        <label>
+          姓名：
+          <input type="text" v-on="$listeners"/>
+        </label>
+      `
+    })
 
     const vm = new Vue({
       el: '#app',
       data: {
-       count:0,
-       array: [1, 2, 3]
-      }
+        postFontSize: 1, 
+        posts: [{
+            title: '標題',
+            content: '内容内容内容',
+            id: 0
+          },
+          {
+            title: '標題1',
+            content: '内容内容内容',
+            id: 1
+          },
+          {
+            title: '標題2',
+            content: '内容内容内容',
+            id: 2
+          },
+          {
+            title: '標題3',
+            content: '内容内容内容',
+            id: 3
+          },
+        ]
+      },
+      methods: {
+        onEnlargeText (e) {
+          this.postFontSize += e;
+        },
+        onFocus () {
+          console.log('focus');
+        },
+        onBlur () {
+          console.log('Blur');
+        },
+      },
 
     })
   </script>
