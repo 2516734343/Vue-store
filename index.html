@@ -6,8 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
-  <link rel="stylesheet" href="index.css">
-  <script src="axios.js"></script>
   <script src="./vue.js"></script>
 </head>
 
@@ -15,97 +13,58 @@
 
 
   <div id="app">
-    <!-- <button-counter></button-counter> -->
-    <!-- <video-list :video-list="videoList"></video-list> -->
-    <my-cmp :list="list"></my-cmp>
+    father: {{ array }}
+    <button @click="array.push(4)">father 點擊</button>
+    <my-array :array="array"></my-array>
+
+    <!-- {{ count }}
+    <my-count :count="count"></my-count> -->
+<base-input type="radio"></base-input>
+    
   </div>
 
   <script>
-  //   Vue.component('button-counter', {
-  //     data() {
-  //       return {
-  //         count: 0,
-  //       }
-  //     },
-  //     template: `
-  //   <button @click="count ++">你按了我{{ count }}次</button>
-  // `
-  //   })
-
-  Vue.component('video-list', {
-      props: ['videoList'],
+   Vue.component('my-array', {
+      props: {
+        array: Array
+      },
+      data () {
+        return {
+          myArray: this.array, // 引用 深度克隆
+        }
+      },
       template: `
-        <div class="video-list">
-          <video-item
-            v-for="video in videoList"
-            v-bind="video"
-          ></video-item>
+        <div>
+          son: {{ myArray }}
+          <button @click="myArray.push(4)">son 點擊</button>
         </div>
       `
     })
 
-  Vue.component('video-item', {
-      props: ['poster', 'play', 'rank', 'title'],
-      template: `
-        <div class="video-item">
-          <div class="poster">
-            <img :src="poster" alt="">
-            <div class="info">
-              <div class="play">{{ play }}</div>
-              <div class="rank">{{ rank }}</div>
-            </div>
-          </div>
-          <div class="title">{{ title }}</div>
-        </div>
-      `
-    });
+    size="str"
+    str = "    xxXX    ";
 
-    Vue.component('my-cmp', {
-      // props: ['list'],
-      props: {
-        list: {
-          type: Array,
-          default () {
-            return [
-              { name: '哈哈'},
-              { name: '嘿嘿'}
-            ]
-          },
-          required: true,        
-          validator (prop) {
-            return prop.length > 3;
-          },
-        }
-      },
-      template: `
-        <ul>
-          <li
-            v-for="person in list"
-            :key="person.name"
-          >{{ person.name }}</li>
-        </ul>
-      `
-    });
+    Vue.component('base-input', {
+  inheritAttrs: false,
+  props: ['label', 'value'],
+  template: `
+    <label>
+      {{ label }}
+      <input
+        v-bind="$attrs"
+        v-bind:value="value"
+        v-on:input="$emit('input', $event.target.value)"
+      >
+    </label>
+  `,
+})
 
     const vm = new Vue({
       el: '#app',
       data: {
-        videoList:[],
-        list: [
-          { name: '小辣椒'},
-          { name: '小米粥'}
-        ],
-      },
-      created () {
-        axios.get('https://developer.duyiedu.com/vue/bz/video', {
-          params: {
-            start: 0,
-            offset: 12
-          }
-        }).then(res => {
-          this.videoList = res.data.data
-        })
-      },
+       count:0,
+       array: [1, 2, 3]
+      }
 
     })
   </script>
