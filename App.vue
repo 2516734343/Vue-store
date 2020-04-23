@@ -1,26 +1,24 @@
 <template>
-    <div>
-        {{name}}
-        <base-son />
-    </div>
+  <div class="app">
+    <!-- v-model :value @input :date @choose-date -->
+
+    <date-picker v-model="date"/>
+  </div>
 </template>
 
 <script>
-import son from './Son';
-    export default {
-        data(){
-            return{
-                name:'小辣椒'
-            }
-        },
-        components:{
-            'base-son':son
-        }
+import DatePicker from './DatePicker';
+export default {
+  components: {
+    DatePicker,
+  },  
+  data () {
+    return {
+      date: new Date(),
     }
+  },
+}
 </script>
 
 <style scoped>
-    div{
-        color:green;
-    }
 </style>
