@@ -6,57 +6,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
-  <link rel="stylesheet" href="./pikaday.css">
-  <script src="./pikaday.js"></script>
   <script src="./vue.js"></script>
 </head>
 
 <body>
   <div id="app">
-<cmp-a></cmp-a>
-<cmp-b></cmp-b>
+    <cmp-1></cmp-1>
+    <cmp-2></cmp-2>
   </div>
 
   <script>
-    Vue.prototype.$bus = new Vue();
+    const mixin = {
+      data () {
+        return {
+          a: 'a',
+        }
+      },
+      mounted () {
+        console.log('mixin');
+      },
+      methods: {
+        fn () {
+          console.log('mixin fn');
+        }
+      }
+    };
 
-    Vue.component('cmp-a', {
-      data() {
+    Vue.mixin({
+      created () {
+        console.log('全局混入 created 钩子');
+        const xxx = this.$options.xxx;
+
+        if(xxx) {
+          console.log('created--xxxx');
+        }
+      },
+    });
+
+    Vue.component('cmp-1', {
+      xxx: 'xxx',
+      mixins: [mixin],
+      data () {
+        return {
+          a: 'b'
+        }
+      },
+      mounted () {
+        console.log(this.a);
+        this.fn();
+      },
+      methods: {
+        fn () {
+          console.log('cmp fn');
+        }
+      },
+      template: `
+        <div>cmp-1</div>
+      `
+    })
+
+    Vue.component('cmp-2', {
+      data () {
         return {
           a: 'a'
         }
       },
-      methods: {
-        onClick() {
-          this.$bus.$emit('click', this.a)
-        }
-      },
       template: `
-    <div>
-      <button @click="onClick">点击</button>
-    </div>
-  `,
+        <div>cmp-2</div>
+      `
     })
-
-    Vue.component('cmp-b', {
-      mounted() {
-        this.$bus.$on('click', data => {
-          console.log(data);
-        })
-      },
-      template: `
-    <div>b</div>
-  `,
-    })
-
+    
     const vm = new Vue({
       el: '#app',
-      mounted() {
-
-      },
-      data: {
-
-      }
+      data: {},
     })
   </script>
 </body>
