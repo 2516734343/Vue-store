@@ -13,88 +13,49 @@
 
 <body>
   <div id="app">
-    <my-cmp ref="myCmp">
-      <!-- <cmp-a>
-        <cmp-b>
-          <cmp-c></cmp-c>
-        </cmp-b>
-      </cmp-a> -->
-    </my-cmp>
-    <!-- <input v-for="item in 3" ref="input"/> -->
+<cmp-a></cmp-a>
+<cmp-b></cmp-b>
   </div>
 
   <script>
-    Vue.component('my-cmp', {
-      provide () {
-        return {
-          share: this.share
-        }
-      },
-      data () {
-        return {
-          share: 'share',
-        }
-      },
-      mounted () {
-        this.datePicker('inputA');
-        this.datePicker('inputB');
-      },
-      beforeDestroy () {
-        // this.picker.destroy();
-      },
-      methods: {
-        datePicker (refName) {
-          var picker = new Pikaday ({
-            field: this.$refs[refName],
-            format: 'YYYY-MM-DD'
-          })
-
-          this.$once('hook:beforeDestroy', () => {
-            picker.destroy();
-          })
-        },
-      },
-      template: `<div>
-        <input ref="inputA"/>
-        <input ref="inputB"/>
-        <button @click="$destroy()">销毁自己</button>
-      </div>`
-    });
+    Vue.prototype.$bus = new Vue();
 
     Vue.component('cmp-a', {
-      inject: ['share'],
-      mounted () {
-        console.log(this.share);
+      data() {
+        return {
+          a: 'a'
+        }
       },
-      template: '<div><slot></slot></div>'
-    });
+      methods: {
+        onClick() {
+          this.$bus.$emit('click', this.a)
+        }
+      },
+      template: `
+    <div>
+      <button @click="onClick">点击</button>
+    </div>
+  `,
+    })
 
     Vue.component('cmp-b', {
-      inject: ['share'],
-      mounted () {
-        console.log(this.share);
+      mounted() {
+        this.$bus.$on('click', data => {
+          console.log(data);
+        })
       },
-      // mounted () {
-      //   this.$root.name = 'duyi';
-      // },
-      template: '<div><slot></slot></div>'
-    });
-    
-    Vue.component('cmp-c', {
-      mounted () {
-
-        console.log(this.$parent.share || this.$parent.$parent.share || this.$parent.$parent.$parent.root);
-      },
-      template: '<div><slot></slot></div>'
-    });
+      template: `
+    <div>b</div>
+  `,
+    })
 
     const vm = new Vue({
       el: '#app',
-      mounted () {
-        console.log(this.$refs);
+      mounted() {
+
       },
       data: {
-        name: 'shanshan',
+
       }
     })
   </script>
