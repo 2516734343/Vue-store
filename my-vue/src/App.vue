@@ -2,7 +2,7 @@
   <div id="app">
 
     <div class="nav-box">
-      <div class="logo" @click="handleClick">小辣椒之家</div>
+      <div class="logo">小辣椒之家</div>
       <div class="nav-list">
         <router-link to="/">首页</router-link>
         <router-link to="/learn">课程学习</router-link>
@@ -12,10 +12,7 @@
       </div>
     </div>
     <div class="container">
-      <transition>
          <router-view></router-view>
-      </transition>
-      <router-view name="student"></router-view>
     </div>
   </div>
 </template>
@@ -23,32 +20,11 @@
 <script>
 
 export default {
-  name: 'app',
-  components: {
-  },
-  methods:{
-    handleClick(){
-      this.$router.push('/home');
-      //  this.$router.replace('/home');
-      //  this.$router.go(1);
-    }
-  }
+ 
 }
 </script>
 
 <style scoped>
-/* #app{
-  overflow-x: hidden;
-} */
-.v-enter{
-  transform: translateX(1000px);
-}
-.v-enter-active{
-  transition: all .3s;
-}
-.v-enter-to{
-  transform: translateX(0px);
-}
 .nav-box {
   display: flex;
   justify-content: space-between;
