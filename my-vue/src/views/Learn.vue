@@ -3,8 +3,3 @@
     课程学习
   </div>
 </template>
-
-<script>
-export default {
-}
-</script>

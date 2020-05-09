@@ -2,7 +2,7 @@
   <div id="app">
 
     <div class="nav-box">
-      <div class="logo">小辣椒之家</div>
+      <div class="logo">渡一教育</div>
       <div class="nav-list">
         <router-link to="/">首页</router-link>
         <router-link to="/learn">课程学习</router-link>
@@ -12,7 +12,7 @@
       </div>
     </div>
     <div class="container">
-         <router-view></router-view>
+      <router-view></router-view>
     </div>
   </div>
 </template>
@@ -20,7 +20,9 @@
 <script>
 
 export default {
- 
+  name: 'app',
+  components: {
+  },
 }
 </script>
 
