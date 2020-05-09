@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import VueRouter from './vue-router';
+import VueRouter from 'vue-router';
 import Home from './views/Home';
 Vue.use(VueRouter);
 
@@ -31,12 +31,12 @@ const routes = [
   },
   {
     path: '/activity',
-    component: () => import(/* webpackChunkName: 'academic' */'./views/Activity'),
-    redirect (to) {
-      return {
-        name: 'academic',
-      }
-    },
+    component: () => import('./views/Activity'),
+    // redirect (to) {
+    //   return {
+    //     name: 'academic',
+    //   }
+    // },
   },
 ];
 

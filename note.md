@@ -1,579 +1,383 @@
-# VueRouter_基础
+# Vuex_State
+Vuex是vue的状态管理工具，为了更方便的实现多个组件共享状态。
 
-## 什么是路由？
-路由是根据不同的url地址展现不同的内容或页面。
-早期的路由都是后端直接根据url来重载页面实现的，即后端控制路由。
-后来页面越来越复杂，服务器压力越来越大，随着ajax（异步刷新技术）的出现，页面的实现非重载就能刷新数据，让前端也可以控制url自行管理，前端路由由此而生。
-
-## 什么时候使用前端路由？
-前端路由更多用在单页应用上，也就是SPA(Single Page Web Application)，在单页面应用中，大部分页面结果不变，只改变部分内容的使用。
-
-## 安装路由
-> 安装：``npm install vue-router``。
-
-## 使用路由
-### JavaScript
-1. 引入路由
+## 安装
 ```js
-import VueRouter from 'vue-router';
+npm install vuex --save
 ```
 
-2. 使用路由
+## 使用
 ```js
-Vue.use(VueRouter);
-```
+import Vue from 'vue';
+import Vuex from 'vuex';
 
-3. 定义路由组件
-```js
-// 可以从其他文件 import 进来
-const Foo = { template: '<div>foo</div>' }
-const Bar = { template: '<div>bar</div>' }
-```
+Vue.use(Vuex);
 
-4. 定义路由
-```js
-// 每个路由应该映射一个组件
-const routes = [
-  { path: '/foo', component: Foo },
-  { path: '/bar', component: Bar }
-]
-```
+const store = new Vuex.Store({
+  state: {
+    count: 0
+  }
+})
 
-5. 创建 router 实例，然后传 `routes` 配置
-```js
-const router = new VueRouter({
-  routes 
+new Vue({
+  store,
 })
 ```
 
-6. 创建和挂载根实例
-```js
-const app = new Vue({
-  router
-}).$mount('#app')
-```
+## State
+单一状态树，使用一个对象就包含了全部的应用层级状态。
 
-### html
+### 在Vue组件中获得Vuex状态
+Vuex 通过store 选项，提供了一种机制将状态从跟组件“注入”到每一个子组件中（调用Vue.use(Vuex)）。
+
+通过在根实例中注册store选项，该store实例会注入到根组件下的所有子组件中，且子组件能通过this.\$store访问。
 ```html
-<div id="app">
-  <h1>Hello App!</h1>
-  <p>
-    <!-- 使用 router-link 组件来导航. -->
-    <!-- 通过传入 `to` 属性指定链接. -->
-    <!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
-    <router-link to="/foo">Go to Foo</router-link>
-    <router-link to="/bar">Go to Bar</router-link>
-  </p>
-  <!-- 路由出口 -->
-  <!-- 路由匹配到的组件将渲染在这里 -->
-  <router-view></router-view>
+<div class="home">
+  {{ $store.state.count }}
 </div>
 ```
 
+### mapState 辅助函数
+当一个组件需要获取多个状态时，将这些状态都声明为计算属性会有些重复和冗余。为了解决这个问题，我们可以使用mapState辅助函数帮助我们生成计算属性：
 
-
-
-## router-link class
-- router-link-exact-active 当前展示路径完全匹配组件to属性的值
-- router-link-active  当前展示路径包含to属性的值
-
-> 更改class名
 ```js
-VueRouter({
-  linkActiveClass: 'link-active',
-  linkExactActiveClass: 'link-exact-active',
-})
+import { mapState } from 'vuex';
+
+computed: {
+  ...mapState(['count']),
+},
+
+```
+使用不同的名字：
+```js
+computed: {
+  ...mapState({
+    storeCount: state => state.count,
+    // 简写
+    storeCount: 'count', // 等同于 state => state.count
+  }),
+},
+
 ```
 
-## hash模式
-vue-router 默认 hash 模式 —— 使用 URL 的 hash 来模拟一个完整的 URL，于是当 URL 改变时，页面不会重新加载。
+# Vuex_Getter
+store的计算属性。getter的返回值会根据它的依赖被缓存起来，且只有当它的依赖值发生了改变才会被重新计算。
 
-## history 模式
-如果不想要很丑的 hash，我们可以用路由的 history 模式，这种模式充分利用 history.pushState API 来完成 URL 跳转而无须重新加载页面。
-在路由配置中设置：
+Getter 接收state作为其第一个参数、getters作为其第二个参数。
+
 ```js
-VueRouter({
-  mode: 'history',
-})
-```
-当你使用 history 模式时，URL 就像正常的 url，例如 http://yoursite.com/user/id, 也好看！
-
-不过这种模式要玩好，还需要后台配置支持。因为我们的应用是个单页客户端应用，如果后台没有正确的配置，当用户在浏览器直接访问 http://oursite.com/user/id 就会返回 404，这就不好看了。
-
-所以呢，你要在服务端增加一个覆盖所有情况的候选资源：如果 URL 匹配不到任何静态资源，则应该返回同一个 index.html 页面，这个页面就是你 app 依赖的页面。
-
-# VueRouter_命名路由-嵌套路由-重定向-别名
-
-## 命名路由
-可以通过一个名称标识一个路由，这样在某些时候会显得更方便一些，特别是在链接一个路由，或者是执行一些跳转时，可以在创建Router实例时，在routes配置中给某个路由设置名称：
-```js
-routes = [
-  {
-    path: '/activity/personal',
-    name: 'personal',
-    component: Personal,
+getters: {
+  doubleCount (state) {
+    return state.count * 2;
   }
-];
-```
-要链接到一个命名路由，可以给 ``router-link`` 的 to 属性传一个对象：
-```html
-<router-link :to="{ name: 'personal' }">个人中心</router-link>
+}
 ```
 
-## 嵌套路由
-一个被 router-view 渲染的组件想要包含自己的嵌套 router-view 时，可以使用嵌套路由，如：
+## 通过属性访问
+Getter会暴露为store.getters对象：``this.$store.getters.doubleCount``
+
+## 通过方法访问
+也可以让getter返回一个函数，来实现给getter传参
 ```js
-{
-  path: '/activity',
-  component: () => import('./views/Activity'),
-  children: [
-    {
-      path: '/activity/academic',
-      name: 'academic',
-      component: () => import('./views/Academic'),
-    },
-    {
-      path: '/activity/personal',
-      name: 'personal',
-      component: () => import('./views/Personal'),
-    },
-    {
-      path: '/activity/download',
-      name: 'download',
-      component: () => import('./views/Download'),
+getters: {
+  addCount: state => num => state.count + num;
+}
+```
+```js
+this.$store.addCount(3);
+```
+
+## mapGetters 辅助函数
+```js
+import { mapsGetters } from 'vuex';
+
+export default {
+  computed: {
+    ...mapGetters([
+      'doubleCount',
+      'addCount',
+    ])
+  }
+}
+```
+
+如果你想将一个 getter 属性另取一个名字，使用对象形式：
+```js
+mapGetters({
+  // 把 `this.doneCount` 映射为 `this.$store.getters.doneTodosCount`
+  storeDoubleCount: 'doubleCount'
+})
+```
+
+# Vuex_Mutation
+更改 Vuex 的 store 中的状态的唯一方法是提交 mutation。
+
+```js
+const store = new Vuex.Store({
+  state: {
+    count: 1
+  },
+  mutations: {
+    increment (state) {
+      // 变更状态
+      state.count++
     }
-  ],
+  }
+})
+```
+
+不能直接调用一个mutation handler。这个选项更像是事件注册：“当触发一个类型为``increment``的mutation时，调用次函数。”：
+```js
+this.$store.commit('increment');
+```
+
+## 在组件中提交 Mutation
+除了在组件中使用 ``this.$store.commit('xxx')`` 提交 mutation之外，还可以使用 mapMutations 辅助函数：
+```js
+import { mapMutations } from 'vuex'
+
+export default {
+  // ...
+  methods: {
+    ...mapMutations([
+      'increment', // 将 `this.increment()` 映射为 `this.$store.commit('increment')`
+    ]),
+    ...mapMutations({
+      add: 'increment' // 将 `this.add()` 映射为 `this.$store.commit('increment')`
+    })
+  }
 }
 ```
-经过这样的设置，在 Activity 组件中就可以使用 router-view 了。
-子路由的path可以简写：
-```js
-path: 'personal'
-```
-这样会自动将父路由的路径，拼接在子路由前，最终结果为：/activity/personal。
 
-当访问 /activity 下的其他路径时，并不会渲染出来任何东西，如果想要渲染点什么，可以提供一个空路由：
+## 提交载荷（Payload）
+你可以向store.commit传入额外的参数，即mutation的载荷（payload）：
 ```js
-{
-  path: '/activity',
-  children: [
-    {
-      path: '',
-      component: () => import('./views/Academic'),
-    },
-  ],
+mutations: {
+  increment (state, n) {
+    state.count += n
+  }
+}
+```
+```js
+store.commit('increment', 10)
+```
+在大多数情况下，载荷应该是一个对象，这样可以包含多个字段并且记录的mutation会更易读：
+```js
+mutations: {
+  increment (state, payload) {
+    state.count += payload.amount
+  }
+}
+```
+```js
+store.commit('increment', {
+  amount: 10
+})
+```
+
+## 对象风格的提交方式
+提交 mutation 的另一种方式是直接使用包含 type 属性的对象：
+```js
+store.commit({
+  type: 'increment',
+  amount: 10
+})
+```
+当使用对象风格的提交方式，整个对象都作为载荷传给 mutation 函数，因此 handler 保持不变：
+```js
+mutations: {
+  increment (state, payload) {
+    state.count += payload.amount
+  }
 }
 ```
 
-## 重定向
-重定向也是通过 routes 配置来完成，下面例子是从 /a 重定向到 /b
+## 使用常量替代 Mutation 事件类型
+把这些常量放在单独的文件中可以让你的代码合作者对整个 app 包含的 mutation 一目了然：
 ```js
-const router = new VueRouter({
-  routes: [
-    { path: '/a', redirect: '/b' }
-  ]
+// mutation-types.js
+export const COUNT_INCREMENT = 'COUNT_INCREMENT'
+```
+```js
+// store.js
+import Vuex from 'vuex'
+import { COUNT_INCREMENT } from './mutation-types'
+
+const store = new Vuex.Store({
+  state: { ... },
+  mutations: {
+    [COUNT_INCREMENT] (state) {
+      // ...
+    }
+  }
 })
 ```
-重定向的目标也可以是一个命名的路由：
-```js
-const router = new VueRouter({
-  routes: [
-    { path: '/a', redirect: { name: 'foo' }}
-  ]
-})
-```
-甚至是一个方法，动态返回重定向目标：
-```js
-const router = new VueRouter({
-  routes: [
-    { path: '/a', redirect: to => {
-      // 方法接收 目标路由 作为参数
-      // return 重定向的 字符串路径/路径对象
-    }}
-  ]
-})
-```
+用不用常量取决于自己，在需要多人协作的大型项目中，这会很有帮助。
 
-## 别名
-“重定向”的意思是，当用户访问 /a时，URL 将会被替换成 /b，然后匹配路由为 /b，那么“别名”又是什么呢？
+## Mutation 需遵守 Vue 的响应规则
+既然 Vuex 的 store 中的状态是响应式的，那么当我们变更状态时，监视状态的 Vue 组件也会自动更新。这也意味着 Vuex 中的 mutation 也需要与使用 Vue 一样遵守一些注意事项：
 
-/a 的别名是 /b，意味着，当用户访问 /b 时，URL 会保持为 /b，但是路由匹配则为 /a，就像用户访问 /a 一样。
-
-上面对应的路由配置为：
-
-```js
-const router = new VueRouter({
-  routes: [
-    { path: '/a', component: A, alias: '/b' }
-  ]
-})
-```
-
-# VueRouter_编程式的导航
-通过在 Vue 根实例的 router 配置传入 router 实例，\$router、 \$route 两个属性会被注入到每个子组件。
-
-## $router
-路由实例对象。
-
-除了使用  ``<router-link>`` 创建 a 标签来定义导航链接，我们还可以借助 router 的实例
-方法，通过编写代码来实现。
-
-### $router.push
-想要导航到不同的 URL，则使用 router.push 方法。这个方法会向 history 栈添加一个新的记录，所以，当用户点击浏览器后退按钮时，则回到之前的 URL。
-
-当你点击 ``<router-link>`` 时，这个方法会在内部调用，所以说，点击 ``<router-link :to="...">`` 等同于调用 \$router.push(...)。
-
-声明式 | 编程式
-:-: | :-:
-``<router-link :to="...">`` | this.$router.push(...) 
-
-该方法的参数可以是一个字符串路径，或者一个描述地址的对象。例如：
-```js
-// 字符串
-this.$router.push('home')
-
-// 对象
-this.$router.push({ path: 'home' })
-
-// 命名的路由
-this.$router.push({ name: 'user' })
-```
-
-### $router.replace
-跟 router.push 很像，唯一的不同就是，它不会向 history 添加新记录，而是替换掉当前的 history 记录。
-
-声明式 | 编程式
-:-: | :-:
-``<router-link :to="..." replace>`` | this.$router.replace(...) 
-
-### $router.go(n)
-这个方法的参数是一个整数，意思是在 history 记录中向前或者后退多少步，类似 window.history.go(n)。
-
-```js
-// 在浏览器记录中前进一步，等同于 history.forward()
-this.$router.go(1)
-
-// 后退一步记录，等同于 history.back()
-this.$router.go(-1)
-
-// 前进 3 步记录
-this.$router.go(3)
-
-// 如果 history 记录不够用，那就默默地失败呗
-this.$router.go(-100)
-this.$router.go(100)
-```
-
-## $route
-只读，路由信息对象。
-
-### $route.path
-字符串，对应当前路由的路径，总是解析为绝对路径，如 "/foo/bar"。
-
-### $route.params
-一个 key/value 对象，包含了动态片段和全匹配片段，如果没有路由参数，就是一个空对象。
-
-### $route.query
-一个 key/value 对象，表示 URL 查询参数。例如，对于路径 /foo?user=1，则有 \$route.query.user == 1，如果没有查询参数，则是个空对象。
-
-### $route.hash
-路由的 hash 值 (带 #) ，如果没有 hash 值，则为空字符串。
-
-### $route.fullPath
-完成解析后的 URL，包含查询参数和 hash 的完整路径。
-
-### $route.matched
-一个数组，包含当前路由的所有嵌套路径片段的路由记录 。路由记录就是 routes 配置数组中的对象副本 (还有在 children 数组)。
+- 最好提前在你的 store 中初始化好所有所需属性。
+- 当需要在对象上添加新属性时，你应该
+  - 使用 Vue.set(obj, 'newProp', 123), 或者
+  - 以新对象替换老对象。例如，利用对象展开运算符我们可以这样写：
     ```js
-      const router = new VueRouter({
-        routes: [
-          // 下面的对象就是路由记录
-          {
-            path: '/foo',
-            component: Foo,
-            children: [
-              // 这也是个路由记录
-              { path: 'bar', component: Bar }
-            ]
-          }
-        ]
-      })
+    state.obj = { ...state.obj, newProp: 123 }
     ```
 
-    当 URL 为 /foo/bar，\$route.matched 将会是一个包含从上到下的所有对象 (副本)。
+## 表单处理
+在Vuex的state上使用v-model时，由于会直接更改state的值，所以Vue会抛出错误。
 
-### $route.name
-当前路由的名称，如果有的话
+如果想要使用双向数据的功能，就需要自己模拟一个v-model: :value="msg" @input="updateMsg"。
 
-### $route.redirectedFrom
-如果存在重定向，即为重定向来源的路由的名字。
-
-# VueRouter_动态路由匹配
-当我们需要把某种模式匹配到的所有路由，全都映射到同个组件。例如，我们有一个 User 组件，对于所有 ID 各不相同的用户，都要使用这个组件来渲染。那么，我们可以在 vue-router 的路由路径中使用“动态路径参数”来达到这个效果：
-```js
-const User = {
-  template: '<div>User</div>'
-}
-
-const router = new VueRouter({
-  routes: [
-    // 动态路径参数 以冒号开头
-    { path: '/user/:id', component: User }
-  ]
-})
-```
-经过这样的设置，像 /user/foo 和 /user/bar 都将映射到相同的路由。
-
-一个“路径参数”使用冒号 : 标记。当匹配到一个路由时，参数值会被设置到 this.$route.params，可以在每个组件内使用。
-
-# VueRouter_命名视图-路由组件传参
-## 命名视图
-想同时展示多个视图时，并且每个视图展示不同的组件时，可以使用命名视图。
-
-可以在界面中拥有多个单独命名的视图，而不是只有一个单独的出口。如果 router-view 没有设置名字，那么默认为 default。
+### 双向绑定的计算属性
+上面的做法，比v-model本身繁琐很多，所以我们还可以使用计算属性的setter来实现双向绑定：
 ```html
-<router-view class="view one"></router-view>
-<router-view class="view two" name="a"></router-view>
-<router-view class="view three" name="b"></router-view>
+<input v-model="msg">
 ```
 
-一个视图使用一个组件渲染，因此对于同个路由，多个视图就需要多个组件。确保正确使用 components 配置 (带上 s)：
 ```js
-const router = new VueRouter({
-  routes: [
-    {
-      path: '/',
-      components: {
-        default: Foo,
-        a: Bar,
-        b: Baz
-      }
+computed: {
+  msg: {
+    get () {
+      return this.$store.state.obj.msg;
+    },
+    set (value) {
+      this.$store.commit(UPDATE_MSG, { value });
     }
-  ]
-})
+  }
+}
 ```
 
-## 路由组件传参
-在组件中使用 $route 会使之与其对应路由形成高度耦合，从而使组件只能在某些特定的 URL 上使用，限制了其灵活性。
+## Mutation 必须是同步函数
+要记住 **mutation 必须是同步函数**。why？
 
-使用 props 将组件和路由解耦。
-
-## 布尔模式
-如果 props 被设置为 true，route.params 将会被设置为组件属性。
-
-## 对象模式
-如果 props 是一个对象，它会被按原样设置为组件属性。当 props 是静态的时候有用。
 ```js
-const router = new VueRouter({
-  routes: [
-    { 
-      path: '/promotion/from-newsletter', 
-      component: Promotion, 
-      props: { newsletterPopup: false } 
-    }
-  ]
-})
-```
-
-## 函数模式
-你可以创建一个函数返回 props。函数的第一个参数是 route （即$route）。
-```js
-const router = new VueRouter({
-  routes: [
-    { path: '/search', component: SearchUser, props: (route) => ({ query: route.query.q }) }
-  ]
-})
-```
-
-# VueRouter_导航守卫
-导航：路由正在发生变化。
-
-导航守卫主要用来通过跳转或取消的方式守卫导航。
-
-导航守卫被分成三种：全局的、单个路由独享的、组件内的。
-
-## 全局守卫
-是指路由实例上直接操作的钩子函数，触发路由就会触发这些钩子函数。
-
-### 全局前置守卫 beforeEach
-在路由跳转前触发，一般被用于登录验证。
-```js
-const router = new VueRouter({ ... })
-
-router.beforeEach((to, from, next) => {
-  // ...
-})
-```
-
-参数说明：
-
-* to 目标路由对象
-* from 即将要离开的路由对象
-* next 三个参数中最重要的参数。
-    1. 必须调用next()，才能继续往下执行一个钩子，否则路由跳转会停止
-    2. 若要中断当前的导航，可以调用next(false)。
-    3. 可以使用next跳转到一个不同的地址。终端当前导航，进入一个新的导航。next参数值和$routet.push一致。
-    4. next(error)。2.4+，如果传入的参数是一个Error实例，则导航会被终止，且该错误会被传递给router.onError() 注册过的回调。
-
-### 全局解析守卫 beforeResolve
-和boforeEach类似，路由跳转前触发。
-
-和beforeEach的区别：在导航被确认之前，同时在所有组件内守卫和异步路由组件被解析之后，解析守卫就被调用。
-```js
-const router = new VueRouter({ ... })
-
-router.beforeResolve((to, from, next) => {
-  // ...
-})
-```
-
-### 全局后置钩子 afterEach
-和beforeEach相反，路由跳转完成后触发。
-```js
-const router = new VueRouter({ ... })
-
-router.afterEach((to, from) => {
-  // ...
-})
-```
-
-## 路由独享守卫
-是指在单个路由配置的时候也可以设置的钩子函数。
-
-### beforeEnter
-和beforeEach完全相同，如果都设置则在beforeEach之后紧随执行。
-```js
-const router = new VueRouter({
-  routes: [
-    {
-      path: '/home',
-      component: Home,
-      beforeEnter: (to, from, next) => {
-        // ...
-      }
-    }
-  ]
-})
-```
-
-## 组件内守卫
-是指在组件内执行的钩子函数，类似于组件内的生命周期，相当于为配置路由的组件添加的生命周期钩子函数。
-
-### beforeRouteEnter
-路由进入之前调用。
-
-**在该守卫内访问不到组件的实例，this值为undefined。**在这个钩子函数中，可以通过传一个回调给 next来访问组件实例。在导航被确认的时候执行回调，并且把组件实例作为回调方法的参数，可以在这个守卫中请求服务端获取数据，当成功获取并能进入路由时，调用next并在回调中通过 vm访问组件实例进行赋值等操作，（next中函数的调用在mounted之后：为了确保能对组件实例的完整访问）。
-```js
-beforeRouteEnter (to, from, next) {
-    // 在渲染该组件的对应路由被 confirm 前调用
-    // 不！能！获取组件实例 `this`
-    // 因为当守卫执行前，组件实例还没被创建
-
-    next( vm => {
-    // 通过 `vm` 访问组件实例
-  })
+mutations: {
+  [COUNT_INCREMENT] (state) {
+    setTimeout(() => {
+      state.count ++;
+    }, 1000)
   },
-  ```
-
-### beforeRouteUpdate
-在当前路由改变时，并且该组件被复用时调用，可以通过this访问实例。
-
-何时组件会被复用？
-
-动态路由间互相跳转
-路由query变更
-```js
-beforeRouteUpdate (to, from, next) {
-  // 在当前路由改变，但是该组件被复用时调用
-  // 举例来说，对于一个带有动态参数的路径 /foo/:id，在 /foo/1 和 /foo/2 之间跳转的时候，
-  // 由于会渲染同样的 Foo 组件，因此组件实例会被复用。而这个钩子就会在这个情况下被调用。
-  // 可以访问组件实例 `this`
-},
-```
-
-### beforeRouteLeave
-导航离开该组件的对应路由时调用，可以访问组件实例this。
-```js
-beforeRouteLeave (to, from, next) {
-  // 导航离开该组件的对应路由时调用
-  // 可以访问组件实例 `this`
 }
 ```
+执行上端代码，我们会发现更改state的操作是在回调函数中执行的，这样会让我们的代码在devtools中变的不好调试：当 mutation 触发的时候，回调函数还没有被调用，devtools 不知道什么时候回调函数实际上被调用，任何在回调函数中进行的状态的改变都是不可追踪的。
 
-## 完整的导航解析流程
-1. 导航被触发。
-2. 在失活的组件里调用离开守卫。
-3. 调用全局的 beforeEach 守卫。
-4. 在重用的组件里调用 beforeRouteUpdate 守卫 (2.2+)。
-5. 在路由配置里调用 beforeEnter。
-6. 解析异步路由组件。
-7. 在被激活的组件里调用 beforeRouteEnter。
-8. 调用全局的 beforeResolve 守卫 (2.5+)。
-9. 导航被确认。
-10. 调用全局的 afterEach 钩子。
-11. 触发 DOM 更新。
-12. 用创建好的实例调用 beforeRouteEnter 守卫中传给 next 的回调函数。
+## 严格模式
+开启严格模式，仅需在创建 store 的时候传入 strict: true：
 
-# VueRouter_路由元信息
-定义路由的时候可以配置 meta 字段，用于自定义一些信息。
 ```js
-const router = new VueRouter({
-  routes: [
-    {
-      path: '/foo',
-      component: Foo,
-      children: [
-        {
-          path: 'bar',
-          component: Bar,
-          meta: { requiresLogin: true }
-        }
-      ]
-    }
-  ]
+const store = new Vuex.Store({
+  // ...
+  strict: true
 })
 ```
-# VueRouter_过渡动效-滚动行为
+在严格模式下，无论何时发生了状态变更且不是由 mutation 函数引起的，将会抛出错误。这能保证所有的状态变更都能被调试工具跟踪到。
 
-## 过渡动效
-是基本的动态组件，所以我们可以用 组件给它添加一些过渡效果。
-```html
-<transition>
-  <router-view></router-view>
-</transition>
-```
-## 滚动行为
-使用前端路由，当切换到新路由时，想要页面滚到顶部，或者是保持原先的滚动位置，就像重新加载页面那样。vue-router 可以自定义路由切换时页面如何滚动。
+### 开发环境与发布环境
+不要在发布环境下启用严格模式！严格模式会深度监测状态树来检测不合规的状态变更，要确保在发布环境下关闭严格模式，以避免性能损失。
 
-注意: 这个功能只在支持 history.pushState 的浏览器中可用。
-
-当创建一个 Router 实例，你可以提供一个 scrollBehavior 方法：
 ```js
-const router = new VueRouter({
-  routes: [...],
-  scrollBehavior (to, from, savedPosition) {
-    // return 期望滚动到哪个的位置
+const store = new Vuex.Store({
+  // ...
+  strict: process.env.NODE_ENV !== 'production'
+})
+```
+
+# Vuex_Action
+Action 类似于 mutation，不同在于：
+
+- Action 提交的是 mutation，而不是直接变更状态。
+- Action 可以包含任意异步操作
+
+Action 函数接受一个与 store 实例具有相同方法和属性的 context 对象，因此你可以调用 context.commit 提交一个 mutation，或者通过 context.state 和 context.getters 来获取 state 和 getters:
+
+```js
+const store = new Vuex.Store({
+  state: {
+    count: 0
+  },
+  mutations: {
+    increment (state) {
+      state.count++
+    }
+  },
+  actions: {
+    increment (context) {
+      context.commit('increment')
+    }
   }
 })
 ```
-scrollBehavior 方法接收 to 和 from 路由对象。第三个参数 savedPosition 当且仅当 popstate 导航 (通过浏览器的 前进/后退 按钮触发) 时才可用。
 
-scrollBehavior 返回滚动位置的对象信息，长这样：
-
-* { x: number, y: number }
-* { selector: string, offset? : { x: number, y: number }} (offset 只在 2.6.0+ 支持)
+## 分发Action
 ```js
-scrollBehavior (to, from, savedPosition) {
-  return { x: 0, y: 0 }
-}
+store.dispatch('increment')
 ```
-
+虽然和mutation差不多，但是在action中，可以执行异步操作，但是mutation中不行！！！
 ```js
-scrollBehavior (to, from, savedPosition) {
-  if (to.hash) {
-    return {
-      selector: to.hash // selector 的 值为 hash值
-    }
+actions: {
+  incrementAsync ({ commit }) {
+    setTimeout(() => {
+      commit('increment')
+    }, 1000)
   }
 }
 ```
+
+
+## 组合 Action
+Action 通常是异步的，那么如何知道 action 什么时候结束呢？
+```js
+actions: {
+  actionA ({ commit }) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        commit('someMutation')
+        resolve()
+      }, 1000)
+    })
+  }
+}
+```
+```js
+store.dispatch('actionA').then(() => {
+  // ...
+})
+```
+
+## Vuex 管理模式
+![](https://vuex.vuejs.org/vuex.png)
+
+# Vuex_Module
+由于使用单一状态树，应用的所有状态会集中到一个比较大的对象。当应用变得非常复杂时，store 对象就有可能变得相当臃肿。
+
+为了解决以上问题，Vuex 允许我们将 store 分割成模块（module）。每个模块拥有自己的 state、mutation、action、getter。
+
+```js
+modules: {
+  a,
+  b
+}
+```
+- 获取 state：this.\$store.state.moduleName.xxx
+- 获取 getter：this.\$store.getters.xxx
+- 提交 mutation：this.\$store.commit('xxx');
+- 分发 action：this.\$store.dispatch('xxx');
+- 可以通过mapXXX的方式拿到getters、mutations、actions，但是不能拿到state，如果想通过这种方式获得state，需要加命名空间。
+
+## 命名空间
+可以通过添加 namespaced: true 的方式使其成为带命名空间的模块。
+- 获取 state：this.\$store.state.moduleName.xxx
+- 获取 getter：this.\$store.['moduleName/getters'].xxx
+- 提交 mutation：this.\$store.commit('moduleName/xxx');
+- 分发 action：this.\$store.dispatch('moduleName/xxx');
+- 可以通过mapXXX的方式获取到state、getters、mutations、actions。
+
+## 模块的局部状态
+
+对于模块内部的 mutation 和 getter，接收的第一个参数是模块的局部状态对象。
+
+同样，对于模块内部的 action，局部状态通过 context.state 暴露出来，根节点状态则为 context.rootState。
+
+对于模块内部的 getter，根节点状态会作为第三个参数暴露出来。

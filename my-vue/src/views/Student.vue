@@ -1,11 +1,18 @@
 <template>
     <div class="student">
-        学员展示
+        <studentAdd/>
+        <hr>
+        <studentList/>
     </div>
 </template>
 
 <script>
+import studentAdd from '../components/StudentAdd';
+import studentList from '../components/StduentList'
     export default {
-     
+        components:{
+            studentAdd,
+            studentList
+        }
     }
 </script>
